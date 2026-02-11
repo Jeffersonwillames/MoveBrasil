@@ -10,13 +10,14 @@ Ajudar a população a visualizar:
 - horários de saída e chegada
 - nível de lotação por parada (baixa, média, alta)
 - status do trânsito (livre, moderado, intenso)
+- mapa interativo com pontos das paradas
 
 > Os dados são simulados (mock) para fins de estudo.
 
 ## Stack
 
 - **Backend**: Python + FastAPI + SQLite + SQLAlchemy
-- **Frontend**: HTML + CSS + JavaScript puro
+- **Frontend**: HTML + CSS + JavaScript puro + Leaflet (OpenStreetMap)
 - **Infraestrutura**: Docker + Docker Compose
 
 ## Estrutura do projeto
@@ -56,8 +57,22 @@ Após subir os containers:
 
 - `GET /` - status da API
 - `GET /linhas` - lista linhas com horários, parada, lotação e trânsito
-- `GET /paradas` - lista paradas com lotação
+- `GET /paradas` - lista paradas com lotação e coordenadas (`lat`, `lng`)
+- `GET /paradas/mapa` - retorno compacto para renderização de pontos no mapa
 - `GET /horarios` - lista horários cadastrados
+
+## Mapa interativo
+
+A interface web agora exibe um mapa interativo com marcadores para as paradas simuladas de Maceió.
+Os pontos são alimentados pelo endpoint `GET /paradas/mapa`, contendo:
+
+- `id`
+- `nome`
+- `linha_id`
+- `lat`
+- `lng`
+- `lotacao`
+- `transito`
 
 ## Próximos passos (evolução)
 

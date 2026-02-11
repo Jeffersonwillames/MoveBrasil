@@ -12,6 +12,50 @@ function classeLotacao(nivel) {
   return "media";
 }
 
+function criarMapa() {
+  return L.map("mapa").setView([-9.6498, -35.7089], 12);
+}
+
+function popupParada(parada) {
+  return `
+    <strong>${parada.nome}</strong><br />
+    Linha: ${parada.linha_id}<br />
+    Lotação: ${parada.lotacao}<br />
+    Trânsito: ${parada.transito}
+  `;
+}
+
+async function carregarMapa() {
+  const status = document.getElementById("mapa-status");
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/paradas/mapa`);
+    const paradas = await response.json();
+
+    if (!paradas.length) {
+      status.textContent = "Nenhuma parada disponível para o mapa.";
+      return;
+    }
+
+    const mapa = criarMapa();
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: "&copy; OpenStreetMap contributors",
+    }).addTo(mapa);
+
+    paradas.forEach((parada) => {
+      L.marker([parada.lat, parada.lng])
+        .addTo(mapa)
+        .bindPopup(popupParada(parada));
+    });
+
+    status.textContent = `${paradas.length} ponto(s) carregado(s) no mapa.`;
+  } catch (error) {
+    status.textContent = "Erro ao carregar pontos do mapa.";
+    console.error(error);
+  }
+}
+
 async function carregarLinhas() {
   const container = document.getElementById("linhas-container");
   container.innerHTML = "<p>Carregando dados...</p>";
@@ -62,4 +106,5 @@ async function carregarLinhas() {
   }
 }
 
+carregarMapa();
 carregarLinhas();
