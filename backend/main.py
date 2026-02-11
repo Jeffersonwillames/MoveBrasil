@@ -36,10 +36,22 @@ class ParadaOut(BaseModel):
     id: int
     nome: str
     bairro: str
+    lat: float
+    lng: float
     lotacao: LotacaoOut | None
 
     class Config:
         from_attributes = True
+
+
+class ParadaMapaOut(BaseModel):
+    id: int
+    nome: str
+    linha_id: int
+    lat: float
+    lng: float
+    lotacao: str
+    transito: str
 
 
 class HorarioOut(BaseModel):
@@ -75,10 +87,30 @@ def seed_data(db: Session) -> None:
     ]
 
     paradas = [
-        models.Parada(nome="Terminal do Benedito Bentes", bairro="Benedito Bentes"),
-        models.Parada(nome="Praça Deodoro", bairro="Centro"),
-        models.Parada(nome="Orla da Ponta Verde", bairro="Ponta Verde"),
-        models.Parada(nome="Terminal Trapiche", bairro="Trapiche da Barra"),
+        models.Parada(
+            nome="Terminal do Benedito Bentes",
+            bairro="Benedito Bentes",
+            lat=-9.5563,
+            lng=-35.7735,
+        ),
+        models.Parada(
+            nome="Praça Deodoro",
+            bairro="Centro",
+            lat=-9.6658,
+            lng=-35.7350,
+        ),
+        models.Parada(
+            nome="Orla da Ponta Verde",
+            bairro="Ponta Verde",
+            lat=-9.6632,
+            lng=-35.7003,
+        ),
+        models.Parada(
+            nome="Terminal Trapiche",
+            bairro="Trapiche da Barra",
+            lat=-9.6745,
+            lng=-35.7540,
+        ),
     ]
 
     db.add_all(linhas + paradas)
@@ -156,6 +188,24 @@ def listar_linhas(db: Session = Depends(get_db)):
 @app.get("/paradas", response_model=list[ParadaOut])
 def listar_paradas(db: Session = Depends(get_db)):
     return db.query(models.Parada).all()
+
+
+@app.get("/paradas/mapa", response_model=list[ParadaMapaOut])
+def listar_paradas_mapa(db: Session = Depends(get_db)):
+    horarios = db.query(models.Horario).all()
+
+    return [
+        ParadaMapaOut(
+            id=horario.parada.id,
+            nome=horario.parada.nome,
+            linha_id=horario.linha_id,
+            lat=horario.parada.lat,
+            lng=horario.parada.lng,
+            lotacao=horario.parada.lotacao.nivel if horario.parada.lotacao else "media",
+            transito=horario.status_transito,
+        )
+        for horario in horarios
+    ]
 
 
 @app.get("/horarios", response_model=list[HorarioOut])

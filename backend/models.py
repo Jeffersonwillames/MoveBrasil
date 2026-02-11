@@ -1,6 +1,6 @@
 """Modelos de dados do MVP MoveBrasil."""
 
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String
+from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import relationship
 
 from database import Base
@@ -22,6 +22,8 @@ class Parada(Base):
     id = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     bairro = Column(String, nullable=False)
+    lat = Column(Float, nullable=False)
+    lng = Column(Float, nullable=False)
 
     horarios = relationship("Horario", back_populates="parada", cascade="all, delete-orphan")
     lotacao = relationship("Lotacao", back_populates="parada", uselist=False, cascade="all, delete-orphan")
