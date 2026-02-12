@@ -211,3 +211,17 @@ def listar_paradas_mapa(db: Session = Depends(get_db)):
 @app.get("/horarios", response_model=list[HorarioOut])
 def listar_horarios(db: Session = Depends(get_db)):
     return db.query(models.Horario).all()
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import os
+
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+
+# Serve arquivos estáticos do frontend
+app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
+
+# Home do site
+@app.get("/")
+def home():
+    return FileResponse(os.path.join(FRONTEND_DIR, "index.html"))
+
