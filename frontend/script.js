@@ -29,7 +29,8 @@ async function carregarMapa() {
   const status = document.getElementById("mapa-status");
 
   try {
-    const response = await fetch(`${API_BASE_URL}/paradas/mapa`);
+    const response = await fetch(`${API_BASE_URL}/
+paradas/mapa`);
     const paradas = await response.json();
 
     if (!paradas.length) {
@@ -43,11 +44,50 @@ async function carregarMapa() {
       attribution: "&copy; OpenStreetMap contributors",
     }).addTo(mapa);
 
-    paradas.forEach((parada) => {
-      L.marker([parada.lat, parada.lng])
-        .addTo(mapa)
-        .bindPopup(popupParada(parada));
-    });
+    function corLotacao(lotacao) {
+  const v = String(lotacao || "").toLowerCase();
+  if (v === "alta") return "red";
+  if (v === "media" || v === "média") return "orange";
+  return "green";
+}
+
+function iconLotacao(lotacao) {
+  const cor = corLotacao(lotacao);
+  return L.divIcon({
+    className: "pin-lotacao",
+    html: `<div style="
+      width:16px;height:16px;border-radius:50%;
+      background:${cor};
+      border:2px solid white;
+      box-shadow:0 1px 4px rgba(0,0,0,.35);
+    "></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+}
+
+paradas.forEach((parada) => {
+  L.marker([parada.lat, parada.lng], { icon: iconLotacao(parada.lotacao) })
+    .addTo(mapa)
+    .bindPopup(popupParada(parada));
+});
+
+const legenda = L.control({ position: "bottomright" });
+legenda.onAdd = function () {
+  const div = L.DomUtil.create("div");
+  div.style.background = "white";
+  div.style.padding = "8px";
+  div.style.borderRadius = "8px";
+  div.innerHTML = `
+<b>Lotação</b><br>
+🟢 baixa<br>
+🟡 média<br>
+🔴 alta
+`;
+  return div;
+};
+legenda.addTo(mapa);
+
 
     status.textContent = `${paradas.length} ponto(s) carregado(s) no mapa.`;
   } catch (error) {
